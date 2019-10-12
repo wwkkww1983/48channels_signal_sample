@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="0" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options Connection="1" SerialNo="0" IP="" TargetDevice="unspecified" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="D:\keil工程\STM32\新的\F4模板\Project\Objects\project.axf" />
+            <DataFile Name="" />
+            <Scope>
+                <Options TimeResolutionUs="20000" />
+            </Scope>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="count" Address="0x200000AC" Type="int" Size="4" IsSigned="1" ShowAsHex="1" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="200" MaxValue="400" File="" Scope="1" />
+            </Symbol>
+            <Symbol>
+                <Options Name="time_cnt" Address="0x20000014" Type="uint" Size="4" IsSigned="0" ShowAsHex="1" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="100" MaxValue="1160" File="" Scope="1" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>
