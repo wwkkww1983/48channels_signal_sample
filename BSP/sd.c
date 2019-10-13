@@ -15,6 +15,8 @@ void SD_mem_init(void)
  	exfuns_init();
   f_mount(fs[0],"0:",1);
 	
+	f_mkdir("0:bin");
+	
 	f_bin=(FIL*)mymalloc(SRAMIN,sizeof(FIL));
 	buf=(u8*)mymalloc(SRAMIN,32);
 	pname=(u8*)mymalloc(SRAMIN,32);
@@ -74,7 +76,7 @@ void SD_save_test(void)
 			data_temp[i][j] = j * 10;
 		}
 	}
-	res=f_open(f_bin,"test.bin",FA_OPEN_ALWAYS|FA_WRITE);
+	res=f_open(f_bin,"0:bin/test.bin",FA_OPEN_ALWAYS|FA_WRITE);
 	if(res==0)
 	{
 		f_lseek(f_bin,f_bin->fsize);
@@ -90,7 +92,7 @@ void text_new_pathname(u8 *pname)
 	u16 index=1;
 	while(index<0XFFFF)
 	{
-		sprintf((char*)pname,"data%03d.bin",index);
+		sprintf((char*)pname,"0:bin/data%03d.bin",index);
 		res=f_open(ftemp,(const TCHAR*)pname,FA_READ);
 		if(res==FR_NO_FILE)break;
 		index++;
