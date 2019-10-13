@@ -24,9 +24,7 @@ void systemInit(void)
 	delay_ms(1000);
 	TIMER_init();
 	ADCInit();
-//	LED_init();
-//	Adc_Init();
-//	gpio_config(GPIOA,GPIO_Pin_8,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_PuPd_UP);
+	LED_init();
 	SD_mem_init();
 }
 
@@ -36,25 +34,31 @@ void systemInit(void)
   * @retval   none
   */
 u16 ch6,ch7,ch8;
+u32 count = 0;
 void Loop(void)
 {
 //	SD_save_test();
 //	while(1);
 //	yixiuge_printf("test\n");
 //	delay_ms(10);
-//	static uint32_t currentTime = 0;
+	static uint32_t currentTime = 0;
 //	static uint32_t loopTime_1ms = 0;
 //	static uint32_t loopTime_2ms = 0;
 //	static uint32_t loopTime_5ms = 0;
 //	static uint32_t loopTime_20ms = 0;
-//	static uint32_t loopTime_250ms = 0;
+	static uint32_t loopTime_250ms = 0;
 //	
-//	currentTime = micros();																															//获取当前系统时间，单位微秒
+	currentTime = micros();																															//获取当前系统时间，单位微秒
 	if(data_update)
 	{
 		data_update = 0;
 		save_adc_data();
 		data_update = 0;
+	}
+	if(count == 80)
+	{
+		GPIO_ResetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
+		while(1);
 	}
 //	ch6 = Get_Adc(ADC_Channel_6);
 //	ch7 = Get_Adc(ADC_Channel_7);
@@ -87,12 +91,13 @@ void Loop(void)
 ////		GPIO_ToggleBits(GPIOA,GPIO_Pin_8);
 //	}
 //	
-//	if((int32_t)(currentTime - loopTime_250ms) >= 0)  
-//	{			
-//    loopTime_250ms = currentTime + 250000;																						//250ms控制周期
-		
+	if((int32_t)(currentTime - loopTime_250ms) >= 0)  
+	{			
+    loopTime_250ms = currentTime + 250000;																							//250ms控制周期
+		GPIO_ToggleBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
+		count++;
 //		yixiuge_printf("target_SET X:%d  Y:%d  loctor.YAW:%d  imu.YAW:%.2f\n",loctorData.x,loctorData.y,loctorData.yaw,imu.yaw);
 //		yixiuge_printf("target_SET YAW_SET:%.2f  YAW_fb:%.2f\n",gim.pid.yaw_angle_ref,gim.pid.yaw_angle_fdb);
 //		yixiuge_printf("target_SET err:%.2f  get:%.2f  set:%.2f\n",pid_yaw.err[NOW],imu.yaw,gim.pid.yaw_angle_ref);
-//	}
+	}
 }

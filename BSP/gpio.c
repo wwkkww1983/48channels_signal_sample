@@ -35,7 +35,7 @@ void gpio_AFconfig(GPIO_TypeDef* GPIOx,u32 Pin,GPIOOType_TypeDef OType,GPIOPuPd_
 
 void LED_init(void)
 {
-	gpio_config(GPIOA,GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_PuPd_DOWN);
-	GPIO_SetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9);
+	gpio_config(GPIOA,GPIO_Pin_4 | GPIO_Pin_5,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_PuPd_UP);
+	GPIO_SetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
 }
 

@@ -23,6 +23,7 @@ void SD_mem_init(void)
 		yixiuge_printf("malloc fail\n");
 		delay_ms(200);		
 	}
+	text_new_pathname(pname);
 }
 
 u32 time;
@@ -61,10 +62,6 @@ void save_data(u16 data)
 		if(res==0)
 		f_close(f_bin);
 	}
-//	j  = sprintf( str,     "%.3f  ",1.234);
-//	j += sprintf( str + j, "%d  ",time);
-//	j += sprintf( str + j, "%c",'\r');
-//	j += sprintf( str + j, "%c",'\n');
 }
 
 void SD_save_test(void)
@@ -87,16 +84,27 @@ void SD_save_test(void)
 	}
 }
 
+void text_new_pathname(u8 *pname)
+{	 
+	u8 res;					 
+	u16 index=1;
+	while(index<0XFFFF)
+	{
+		sprintf((char*)pname,"data%03d.bin",index);
+		res=f_open(ftemp,(const TCHAR*)pname,FA_READ);
+		if(res==FR_NO_FILE)break;
+		index++;
+	}
+}
+
 
 void save_adc_data(void)
 {
-	u16 data_temp[2048][3];
-	memcpy(data_temp,CurrentBuffPtr,6144);
-	res=f_open(f_bin,"test.bin",FA_OPEN_ALWAYS|FA_WRITE);
+	res=f_open(f_bin,(const TCHAR*)pname,FA_OPEN_ALWAYS|FA_WRITE);
 	if(res==0)
 	{
 		f_lseek(f_bin,f_bin->fsize);
-		res=f_write(f_bin,data_temp,12288,(UINT*)&br);
+		res=f_write(f_bin,CurrentBuffPtr,ADC_BUFFSIZE*ADC_CHANNEL*2,(UINT*)&br);
 		if(res==0)
 		f_close(f_bin);
 	}

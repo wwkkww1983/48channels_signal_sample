@@ -13,4 +13,6 @@ void save_adc_data(void);
 
 void SD_save_test(void);
 
+void text_new_pathname(u8 *pname);
+
 #endif

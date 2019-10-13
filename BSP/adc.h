@@ -11,6 +11,9 @@ void ADCInit(void);
 
 extern bool data_update;
 extern u16 *CurrentBuffPtr;
+
+extern const u16 ADC_BUFFSIZE;
+extern const u8 ADC_CHANNEL;
  							   
 //void Adc_Init(void); 				//ADC通道初始化
 //u16  Get_Adc(u8 ch); 				//获得某个通道值 
