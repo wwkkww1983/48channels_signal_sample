@@ -1,5 +1,7 @@
 #include "adc.h"
 
+u32 sample_rate = 1000;												//1s采1000个点
+
 /* 数据定义 */
 const u16 ADC_BUFFSIZE = 1300;
 const u8 ADC_CHANNEL = 3;
@@ -110,9 +112,11 @@ void ADCInit_Timer(void)
 	//失能定时器
 	TIM_Cmd(TIM2, DISABLE);
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); //初始化定时器
+	
+	u32 Prescaler = 84000000 / 2 / sample_rate;
 
-	//定时器设置,f = 84M / 2100 / 2 = 200KHz  1ms采 200K / 1000 = 200个点
-	TIM_TimeBaseStructure.TIM_Prescaler = 210 - 1;								//分频系数,TIM2时钟在分频系数不为1时,时钟是APB1时钟的两倍84M
+	//定时器设置,f = 84M / 42000 / 2 = 1KHz  1ms采 1K / 1000 = 1个点
+	TIM_TimeBaseStructure.TIM_Prescaler = Prescaler - 1;				//分频系数,TIM2时钟在分频系数不为1时,时钟是APB1时钟的两倍84M
 	TIM_TimeBaseStructure.TIM_Period = 2 - 1;										//周期值1M/32=31250,CurrentFreq单位为0.1hz,因此需扩大10倍
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;			//时钟分频因子
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数模式
