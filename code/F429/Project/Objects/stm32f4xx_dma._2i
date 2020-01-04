@@ -1,0 +1,6 @@
+-c --cpu Cortex-M4.fp -D__MICROLIB -g -O0 --apcs=interwork -I..\APP -I..\BSP -I..\Libraries\inc -I..\Libraries\src -I..\Libraries\cmsis\Include -I..\Libraries\cmsis
+-I D:\keil工程\STM32\新的\F4模板\Project\RTE
+-I D:\Keil5_ARM\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Device\Include
+-I D:\Keil5_ARM\ARM\CMSIS\Include
+-D__UVISION_VERSION="514" -DSTM32F40_41xxx -DSTM32F40_41xxx -DUSE_STDPERIPH_DRIVER
+-o .\objects\stm32f4xx_dma.o --omf_browse .\objects\stm32f4xx_dma.crf --depend .\objects\stm32f4xx_dma.d --feedback ".\Objects\project.fed" "..\Libraries\src\stm32f4xx_dma.c"
