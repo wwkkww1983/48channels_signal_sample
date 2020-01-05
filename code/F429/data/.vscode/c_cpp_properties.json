@@ -1,0 +1,43 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "intelliSenseMode": "clang-x64",
+            "includePath": [
+                "${workspaceFolder}",
+                "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++",
+                "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32",
+                "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward",
+                "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include",
+                "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed",
+                "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include",
+                "C:/software/opencv/opencv/build/x64/MinGW/include",
+                "C:/software/openNI/openNI2.3/Include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "__GNUC__=8",
+                "__cdecl=__attribute__((__cdecl__))"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++",
+                    "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32",
+                    "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward",
+                    "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include",
+                    "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed",
+                    "C:/software/MinGW/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include",
+                    "C:/software/opencv/opencv/build/x64/MinGW/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "compilerPath": "C:\\software\\MinGW\\mingw64\\bin\\gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

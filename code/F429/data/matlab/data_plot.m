@@ -1,3 +1,5 @@
-filename = '../csv/data002.csv';
+clear;
+clc;
+filename = '../csv/data001.csv';
 data = csvread(filename);
-plot(data(2000:5000,:) / 4096 * 3.3)
+plot(data(330000:340000,3) / 4096 * 3.3)

@@ -1,18 +1,48 @@
 #include "adc.h"
 
-u32 sample_rate = 100000;												//1s采1000个点
+u32 sample_rate = 100000;													//1s采100000个点
 
 /* 数据定义 */
-const u16 ADC_BUFFSIZE = 1500;
+const u16 ADC_BUFFSIZE = 1500;									//1.5s进一次ADC中断
 const u8 ADC_CHANNEL = 3;
+const u8 ADC1_CHANNEL = 2;
+const u8 ADC2_CHANNEL = 1;
 
-u16 uAD_IN_BUFFA[ADC_BUFFSIZE][ADC_CHANNEL];
-u16 uAD_IN_BUFFB[ADC_BUFFSIZE][ADC_CHANNEL];
+//u16 uAD_IN_BUFFA[ADC_BUFFSIZE][ADC_CHANNEL];
+//u16 uAD_IN_BUFFB[ADC_BUFFSIZE][ADC_CHANNEL];
+
+u16 ADC1_test_BUFFA[ADC_BUFFSIZE][ADC1_CHANNEL];
+u16 ADC1_test_BUFFB[ADC_BUFFSIZE][ADC1_CHANNEL];
+u16 ADC2_test_BUFFA[ADC_BUFFSIZE][ADC2_CHANNEL];
+u16 ADC2_test_BUFFB[ADC_BUFFSIZE][ADC2_CHANNEL];
+
+u16 ADC1_BUFFA[ADC_BUFFSIZE][ADC1_CHANNEL];
+u16 ADC1_BUFFB[ADC_BUFFSIZE][ADC1_CHANNEL];
+u16 ADC2_BUFFA[ADC_BUFFSIZE][ADC2_CHANNEL];
+u16 ADC2_BUFFB[ADC_BUFFSIZE][ADC2_CHANNEL];
+
+ADC_CurrentBuffPtr ADC_PTR = {NULL,NULL};
 
 u16 *CurrentBuffPtr = NULL;
 
 void ADCInit_GPIO(void)
 {
+	for(int i=0;i<ADC_BUFFSIZE;i++)
+	{
+		for(int j =0;j<ADC1_CHANNEL;j++)
+		{
+			ADC1_test_BUFFA[i][j] = 1;
+			ADC1_test_BUFFB[i][j] = 1;
+		}
+	}
+	for(int i=0;i<ADC_BUFFSIZE;i++)
+	{
+		for(int j =0;j<ADC2_CHANNEL;j++)
+		{
+			ADC2_test_BUFFA[i][j] = 15;
+			ADC2_test_BUFFB[i][j] = 15;
+		}
+	}
 	GPIO_InitTypeDef GPIO_InitStructure;
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); //使能GPIOA时钟
@@ -37,9 +67,12 @@ void ADCInit_ADC(void)
 	ADC_InitTypeDef ADC_InitStructure;
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE); //使能ADC1时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE); //使能ADC2时钟
 
 	RCC_APB2PeriphResetCmd(RCC_APB2Periph_ADC1, ENABLE);	//ADC1复位
 	RCC_APB2PeriphResetCmd(RCC_APB2Periph_ADC1, DISABLE); //复位结束
+	RCC_APB2PeriphResetCmd(RCC_APB2Periph_ADC2, ENABLE);	//ADC2复位
+	RCC_APB2PeriphResetCmd(RCC_APB2Periph_ADC2, DISABLE); //复位结束
 
 	ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;										 //独立模式
 	ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles; //两个采样阶段之间的延迟5个时钟(三重模式或双重模式下使用)
@@ -54,17 +87,23 @@ void ADCInit_ADC(void)
 	ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Rising; //上升沿触发
 	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_TRGO;				//定时器事件2触发ADC
 	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;												//右对齐
-	ADC_InitStructure.ADC_NbrOfConversion = ADC_CHANNEL;													//ADC_CHANNEL个转换在规则序列中
+	ADC_InitStructure.ADC_NbrOfConversion = ADC1_CHANNEL;													//ADC_CHANNEL个转换在规则序列中
 	ADC_Init(ADC1, &ADC_InitStructure);																						//ADC初始化
+	ADC_InitStructure.ADC_NbrOfConversion = ADC2_CHANNEL;													//ADC_CHANNEL个转换在规则序列中
+	ADC_Init(ADC2, &ADC_InitStructure);																						//ADC初始化
 
 	//连续模式下,通道的配置
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 1, ADC_SampleTime_15Cycles);	//PA6,通道6,rank=1,表示连续转换中第一个转换的通道,采样时间15个周期(如果数据不稳定可以延时采样时间)
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_7, 2, ADC_SampleTime_15Cycles);	//PA7,通道7
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 3, ADC_SampleTime_15Cycles);	//PB0,通道8
+	
+	ADC_RegularChannelConfig(ADC2, ADC_Channel_8, 1, ADC_SampleTime_15Cycles);	//PB0,通道8
 
 	ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE); //连续使能DMA
+	ADC_DMARequestAfterLastTransferCmd(ADC2, ENABLE); //连续使能DMA
 	ADC_DMACmd(ADC1, ENABLE);													//使能ADC_DMA
+	ADC_DMACmd(ADC2, ENABLE);													//使能ADC_DMA
 	ADC_Cmd(ADC1, ENABLE);														//开启AD转换器
+	ADC_Cmd(ADC2, ENABLE);														//开启AD转换器
 }
 
 void ADCInit_DMA(void)
@@ -77,9 +116,9 @@ void ADCInit_DMA(void)
 	//DMA设置
 	DMA_InitStructure.DMA_Channel = DMA_Channel_0;															//选择通道号
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & (ADC1->DR);					//外围设备地址,ADC_DR_DATA规则数据寄存器
-	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(u16 *)uAD_IN_BUFFA;				//DMA存储器地址,自己设置的缓存地址
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(u16 *)ADC1_BUFFA;				//DMA存储器地址,自己设置的缓存地址
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;											//传输方向,外设->存储器
-	DMA_InitStructure.DMA_BufferSize = ADC_BUFFSIZE * ADC_CHANNEL;							//DMA缓存大小,数据传输量ADC_BUFFSIZE * ADC_CHANNEL
+	DMA_InitStructure.DMA_BufferSize = ADC_BUFFSIZE * ADC1_CHANNEL;							//DMA缓存大小,数据传输量ADC_BUFFSIZE * ADC_CHANNEL
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;						//外设是否为增量模式
 	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;											//存储器是否为增量模式
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord; //外设数据长度半个字(16位)
@@ -91,15 +130,26 @@ void ADCInit_DMA(void)
 	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;									//存储器突发,单次传输
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;					//外设突发,单次传输
 	DMA_Init(DMA2_Stream0, &DMA_InitStructure);																	//初始化DMA2_Stream0,对应为ADC1
+	
+	DMA_InitStructure.DMA_Channel = DMA_Channel_1;															//选择通道号 ADC2用通道1数据流2
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) & (ADC2->DR);					//外围设备地址,ADC_DR_DATA规则数据寄存器
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)(u16 *)ADC2_BUFFA;				//DMA存储器地址,自己设置的缓存地址
+	DMA_InitStructure.DMA_BufferSize = ADC_BUFFSIZE * ADC2_CHANNEL;							//DMA缓存大小,数据传输量ADC_BUFFSIZE * ADC_CHANNEL
+	DMA_Init(DMA2_Stream2, &DMA_InitStructure);																	//初始化DMA2_Stream2,对应为ADC2
 
 	//双缓冲模式设置
-	DMA_DoubleBufferModeConfig(DMA2_Stream0, (uint32_t)(u16 *)(uAD_IN_BUFFB), DMA_Memory_0); //DMA_Memory_0首先被传输
+	DMA_DoubleBufferModeConfig(DMA2_Stream0, (uint32_t)(u16 *)(ADC1_BUFFB), DMA_Memory_0); //DMA_Memory_0首先被传输
+	DMA_DoubleBufferModeConfig(DMA2_Stream2, (uint32_t)(u16 *)(ADC2_BUFFB), DMA_Memory_0); //DMA_Memory_0首先被传输
 	DMA_DoubleBufferModeCmd(DMA2_Stream0, ENABLE);
+	DMA_DoubleBufferModeCmd(DMA2_Stream2, ENABLE);
 
 	//设置DMA中断
 	DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TC); //清除中断标志
+	DMA_ClearITPendingBit(DMA2_Stream2, DMA_IT_TC); //清除中断标志
 	DMA_ITConfig(DMA2_Stream0, DMA_IT_TC, ENABLE);	//传输完成中断
+	DMA_ITConfig(DMA2_Stream2, DMA_IT_TC, ENABLE);	//传输完成中断
 	DMA_Cmd(DMA2_Stream0, ENABLE);									//使能DMA
+	DMA_Cmd(DMA2_Stream2, ENABLE);									//使能DMA
 }
 
 void ADCInit_Timer(void)
@@ -135,17 +185,16 @@ void ADCInit_Nvic(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-//	//定时器中断设置
-//	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;						//定时器TIM2中断通道
-//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级0
-//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;				//子优先级1
-//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;						//IRQ通道使能
-//	NVIC_Init(&NVIC_InitStructure);														//根据指定的参数初始化NVIC寄存器
-
 	//DMA中断设置
 	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn;		//DMA2_Stream0中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; //抢占优先级1
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;				//子优先级1
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;						//IRQ通道使能
+	NVIC_Init(&NVIC_InitStructure);														//根据指定的参数初始化NVIC寄存器
+	
+	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream2_IRQn;		//DMA2_Stream2中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;				//子优先级1
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;						//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);														//根据指定的参数初始化NVIC寄存器
 }
@@ -159,38 +208,55 @@ void ADCInit(void)
 	ADCInit_Nvic();
 }
 
-//void TIM2_IRQHandler(void)
-//{
-//	if (TIM_GetITStatus(TIM2, TIM_IT_Update)) //判断发生update事件中断
-//	{
-//		TIM_ClearITPendingBit(TIM2, TIM_IT_Update); //清除update事件中断标志
-////		ADC_SoftwareStartConv(ADC1);
-//	}
-//}
-
 bool data_update = 0;
+bool ADC1_data_update = 0;
+bool ADC2_data_update = 0;
 u32 now = 0,old = 0;
 u32 delta_time = 0;
 void DMA2_Stream0_IRQHandler(void)
 {
 	if (DMA_GetITStatus(DMA2_Stream0, DMA_IT_TCIF0)) //判断DMA传输完成中断
 	{
+//		GPIO_ToggleBits(GPIOA,GPIO_Pin_4);
 		now = micros();
 		delta_time = now - old;
 		DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
-		//         DMA_Cmd(DMA2_Stream0, ENABLE); //使能DMA,连续模式下不需要该使能
 		//数据转移程序
 		if (DMA_GetCurrentMemoryTarget(DMA2_Stream0) == DMA_Memory_0)
 		{
-			data_update = 1;
-			CurrentBuffPtr = uAD_IN_BUFFA[0];
+			ADC1_data_update = 1;
+//			ADC_PTR.ADC1_CurrentBuffPtr = ADC1_test_BUFFA[0];
+			ADC_PTR.ADC1_CurrentBuffPtr = ADC1_BUFFA[0];
 		}
 		else
 		{
-			data_update = 1;
-			CurrentBuffPtr = uAD_IN_BUFFB[0];
+			ADC1_data_update = 1;
+//			ADC_PTR.ADC1_CurrentBuffPtr = ADC1_test_BUFFB[0];
+			ADC_PTR.ADC1_CurrentBuffPtr = ADC1_BUFFB[0];
 		}
 		old = now;
+	}
+}
+
+void DMA2_Stream2_IRQHandler(void)
+{
+	if (DMA_GetITStatus(DMA2_Stream2, DMA_IT_TCIF2)) //判断DMA传输完成中断
+	{
+//		GPIO_ToggleBits(GPIOA,GPIO_Pin_5);
+		DMA_ClearITPendingBit(DMA2_Stream2, DMA_IT_TCIF2);
+		//数据转移程序
+		if (DMA_GetCurrentMemoryTarget(DMA2_Stream2) == DMA_Memory_0)
+		{
+			ADC2_data_update = 1;
+//			ADC_PTR.ADC2_CurrentBuffPtr = ADC2_test_BUFFA[0];
+			ADC_PTR.ADC2_CurrentBuffPtr = ADC2_BUFFA[0];
+		}
+		else
+		{
+			ADC2_data_update = 1;
+//			ADC_PTR.ADC2_CurrentBuffPtr = ADC2_test_BUFFB[0];
+			ADC_PTR.ADC2_CurrentBuffPtr = ADC2_BUFFB[0];
+		}
 	}
 }
 

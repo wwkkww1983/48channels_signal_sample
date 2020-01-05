@@ -49,13 +49,8 @@ void Loop(void)
 	static uint32_t loopTime_250ms = 0;
 //	
 	currentTime = micros();																															//获取当前系统时间，单位微秒
-	if(data_update)
-	{
-		data_update = 0;
-		save_adc_data();
-		data_update = 0;
-	}
-	if(count == 80)
+	save_adc_data();
+	if(count == 20)
 	{
 		GPIO_ResetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
 		while(1);
