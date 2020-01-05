@@ -50,14 +50,14 @@ void Loop(void)
 	static uint32_t loopTime_250ms = 0;
 //	
 	currentTime = micros();																															//获取当前系统时间，单位微秒
-	if(data_update)
+	if(ADC1_data_update==1 || ADC3_data_update==1)
 	{
-		data_update = 0;
 		old_time_sys = micros();
 		save_adc_data();
 		currentTime = micros();
 		delta_time_sys = currentTime - old_time_sys;
-		data_update = 0;
+		ADC1_data_update = 0;
+		ADC3_data_update = 0;
 	}
 	if(count == 80)
 	{

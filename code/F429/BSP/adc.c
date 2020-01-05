@@ -18,7 +18,7 @@ u16 ADC1_BUFFB[ADC_BUFFSIZE][ADC1_CHANNEL];
 u16 ADC3_BUFFA[ADC_BUFFSIZE][ADC3_CHANNEL];
 u16 ADC3_BUFFB[ADC_BUFFSIZE][ADC3_CHANNEL];
 
-u16 *CurrentBuffPtr = NULL;
+ADC_CurrentBuffPtr ADC_PTR = {NULL,NULL};
 
 void ADCInit_GPIO(void)
 {
@@ -239,7 +239,6 @@ void ADCInit(void)
 
 bool ADC1_data_update = 0;
 bool ADC3_data_update = 0;
-bool data_update = 0;
 volatile u32 now = 0,old = 0;
 volatile u32 delta_time = 0;
 void DMA2_Stream0_IRQHandler(void)
@@ -253,21 +252,18 @@ void DMA2_Stream0_IRQHandler(void)
 		if (DMA_GetCurrentMemoryTarget(DMA2_Stream0) == DMA_Memory_0)
 		{
 			ADC1_data_update = 1;
-			data_update = 1;
 //			CurrentBuffPtr = ADC1_BUFFA[0];
-			CurrentBuffPtr = test_ADC1_BUFFA[0];
+			ADC_PTR.ADC1_CurrentBuffPtr = test_ADC1_BUFFA[0];
 		}
 		else
 		{
 			ADC1_data_update = 1;
-			data_update = 1;
 //			CurrentBuffPtr = ADC1_BUFFB[0];
-			CurrentBuffPtr = test_ADC1_BUFFB[0];
+			ADC_PTR.ADC1_CurrentBuffPtr = test_ADC1_BUFFB[0];
 		}
 //		old = now;
 	}
 }
-bool ADC3_flag = 0;
 void DMA2_Stream1_IRQHandler(void)
 {
 	if (DMA_GetITStatus(DMA2_Stream1, DMA_IT_TCIF1)) //判断DMA传输完成中断
@@ -279,15 +275,12 @@ void DMA2_Stream1_IRQHandler(void)
 		if (DMA_GetCurrentMemoryTarget(DMA2_Stream1) == DMA_Memory_0)
 		{
 			ADC3_data_update = 1;
-			data_update = 1;
-			CurrentBuffPtr = test_ADC3_BUFFA[0];
-			ADC3_flag = 1;
+			ADC_PTR.ADC3_CurrentBuffPtr = test_ADC3_BUFFA[0];
 		}
 		else
 		{
 			ADC3_data_update = 1;
-			data_update = 1;
-			CurrentBuffPtr = test_ADC3_BUFFB[0];
+			ADC_PTR.ADC3_CurrentBuffPtr = test_ADC3_BUFFB[0];
 		}
 		old = now;
 	}

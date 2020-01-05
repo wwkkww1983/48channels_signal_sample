@@ -1,10 +1,10 @@
 #include "adc.h"
 
-u32 sample_rate = 1000;												//1s采1000个点
+u32 sample_rate = 100000;												//1s采1000个点
 
 /* 数据定义 */
 const u16 ADC_BUFFSIZE = 1500;
-const u8 ADC_CHANNEL = 16;
+const u8 ADC_CHANNEL = 3;
 
 u16 uAD_IN_BUFFA[ADC_BUFFSIZE][ADC_CHANNEL];
 u16 uAD_IN_BUFFB[ADC_BUFFSIZE][ADC_CHANNEL];

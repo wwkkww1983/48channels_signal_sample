@@ -1,0 +1,3 @@
+filename = '../csv/data';aa = csvread(filename);
+data = table2array(data001);
+plot(data(2000:2200,:) / 4096 * 3.3)
