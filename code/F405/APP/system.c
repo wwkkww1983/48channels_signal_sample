@@ -49,6 +49,8 @@ void Loop(void)
 	static uint32_t loopTime_250ms = 0;
 //	
 	currentTime = micros();																															//获取当前系统时间，单位微秒
+//	save_big_data_test();
+//	while(1);
 	save_adc_data();
 	if(count == 20)
 	{

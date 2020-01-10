@@ -15,4 +15,6 @@ void SD_save_test(void);
 
 void text_new_pathname(u8 *pname);
 
+void save_big_data_test(void);
+
 #endif

@@ -24,7 +24,7 @@ void systemInit(void)
 	delay_ms(1000);
 	TIMER_init();
 	ADCInit();
-	LED_init();
+//	LED_init();
 	SD_mem_init();
 }
 
@@ -50,18 +50,10 @@ void Loop(void)
 	static uint32_t loopTime_250ms = 0;
 //	
 	currentTime = micros();																															//获取当前系统时间，单位微秒
-	if(ADC1_data_update==1 || ADC3_data_update==1)
+	save_adc_data();
+	if(count == 200)
 	{
-		old_time_sys = micros();
-		save_adc_data();
-		currentTime = micros();
-		delta_time_sys = currentTime - old_time_sys;
-		ADC1_data_update = 0;
-		ADC3_data_update = 0;
-	}
-	if(count == 80)
-	{
-		GPIO_ResetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
+//		GPIO_ResetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
 		yixiuge_printf("test\n");
 		delay_ms(10);
 		while(1)
@@ -102,7 +94,7 @@ void Loop(void)
 	if((int32_t)(currentTime - loopTime_250ms) >= 0)  
 	{			
     loopTime_250ms = currentTime + 250000;																							//250ms控制周期
-		GPIO_ToggleBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
+//		GPIO_ToggleBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5);
 		count++;
 //		yixiuge_printf("target_SET X:%d  Y:%d  loctor.YAW:%d  imu.YAW:%.2f\n",loctorData.x,loctorData.y,loctorData.yaw,imu.yaw);
 //		yixiuge_printf("target_SET YAW_SET:%.2f  YAW_fb:%.2f\n",gim.pid.yaw_angle_ref,gim.pid.yaw_angle_fdb);

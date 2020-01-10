@@ -119,6 +119,10 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>UL2CM3</Key>
           <Name>-S0 -C0 -P0 )  -FN1 -FC1000 -FD20000000 -FF0STM32F4xx_1024 -FL0100000 -FS08000000 -FP0($$Device:STM32F429ZG$Flash\STM32F4xx_1024.FLM)</Name>
         </SetRegEntry>
@@ -152,9 +156,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>67</LineNumber>
+          <LineNumber>59</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218726</Address>
+          <Address>134218666</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,7 +167,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\APP\system.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\project\../APP/system.c\67</Expression>
+          <Expression>\\project\../APP/system.c\59</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -216,6 +220,11 @@
           <count>9</count>
           <WinNumber>1</WinNumber>
           <ItemText>ADC3_BUFFA,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>sample_rate,0x0A</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
@@ -517,7 +526,7 @@
 
   <Group>
     <GroupName>STM32_StdPeriph</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

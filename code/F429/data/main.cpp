@@ -75,7 +75,7 @@ int main()
 
 				for (int i = 0; i < ADC_BUFFSIZE; i++)
 				{
-					char str[30];
+					char str[300000];
 					int j;
 					j = sprintf(str, "%d", ADC1_temp[i][0]);   //第一个放ADC1第一个通道的数据
 					for (int n = 0; n < ADC1_channel - 1; n++) //放ADC1剩下的通道数据

@@ -1,17 +1,12 @@
 #include "adc.h"
 
-u32 sample_rate = 1000;												//1s采1000个点
+u32 sample_rate = 1200;												//1s采10000个点
 
 /* 数据定义 */
-const u16 ADC_BUFFSIZE = 1000;
+const u16 ADC_BUFFSIZE = 1200;
 const u8 ADC_CHANNEL = 24;
 const u8 ADC1_CHANNEL = 16;
 const u8 ADC3_CHANNEL = 8;
-
-u16 test_ADC1_BUFFA[2][2]={{2,3},{1,1}};
-u16 test_ADC1_BUFFB[2][2]={{2,2},{1,1}};
-u16 test_ADC3_BUFFA[2][2]={{15,15},{15,15}};
-u16 test_ADC3_BUFFB[2][2]={{15,15},{15,15}};
 
 u16 ADC1_BUFFA[ADC_BUFFSIZE][ADC1_CHANNEL];
 u16 ADC1_BUFFB[ADC_BUFFSIZE][ADC1_CHANNEL];
@@ -197,14 +192,6 @@ void ADCInit_Timer(void)
 void ADCInit_Nvic(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
-
-//	//定时器中断设置
-//	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;						//定时器TIM2中断通道
-//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级0
-//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;				//子优先级1
-//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;						//IRQ通道使能
-//	NVIC_Init(&NVIC_InitStructure);														//根据指定的参数初始化NVIC寄存器
-
 	//DMA中断设置
 	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn;		//DMA2_Stream0中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级1
@@ -228,15 +215,6 @@ void ADCInit(void)
 	ADCInit_Nvic();
 }
 
-//void TIM2_IRQHandler(void)
-//{
-//	if (TIM_GetITStatus(TIM2, TIM_IT_Update)) //判断发生update事件中断
-//	{
-//		TIM_ClearITPendingBit(TIM2, TIM_IT_Update); //清除update事件中断标志
-////		ADC_SoftwareStartConv(ADC1);
-//	}
-//}
-
 bool ADC1_data_update = 0;
 bool ADC3_data_update = 0;
 volatile u32 now = 0,old = 0;
@@ -245,23 +223,21 @@ void DMA2_Stream0_IRQHandler(void)
 {
 	if (DMA_GetITStatus(DMA2_Stream0, DMA_IT_TCIF0)) //判断DMA传输完成中断
 	{
-//		now = micros();
-//		delta_time = now - old;
+		now = micros();
+		delta_time = now - old;
 		DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
 		//数据转移程序
 		if (DMA_GetCurrentMemoryTarget(DMA2_Stream0) == DMA_Memory_0)
 		{
 			ADC1_data_update = 1;
-//			CurrentBuffPtr = ADC1_BUFFA[0];
-			ADC_PTR.ADC1_CurrentBuffPtr = test_ADC1_BUFFA[0];
+			ADC_PTR.ADC1_CurrentBuffPtr = ADC1_BUFFA[0];
 		}
 		else
 		{
 			ADC1_data_update = 1;
-//			CurrentBuffPtr = ADC1_BUFFB[0];
-			ADC_PTR.ADC1_CurrentBuffPtr = test_ADC1_BUFFB[0];
+			ADC_PTR.ADC1_CurrentBuffPtr = ADC1_BUFFB[0];
 		}
-//		old = now;
+		old = now;
 	}
 }
 void DMA2_Stream1_IRQHandler(void)
@@ -275,91 +251,13 @@ void DMA2_Stream1_IRQHandler(void)
 		if (DMA_GetCurrentMemoryTarget(DMA2_Stream1) == DMA_Memory_0)
 		{
 			ADC3_data_update = 1;
-			ADC_PTR.ADC3_CurrentBuffPtr = test_ADC3_BUFFA[0];
+			ADC_PTR.ADC3_CurrentBuffPtr = ADC3_BUFFA[0];
 		}
 		else
 		{
 			ADC3_data_update = 1;
-			ADC_PTR.ADC3_CurrentBuffPtr = test_ADC3_BUFFB[0];
+			ADC_PTR.ADC3_CurrentBuffPtr = ADC3_BUFFB[0];
 		}
 		old = now;
 	}
 }
-
-/*
-//初始化ADC			PA6 PA7 PB0												   
-void  Adc_Init(void)
-{    
-	GPIO_InitTypeDef			GPIO_InitStructure;
-	ADC_CommonInitTypeDef	ADC_CommonInitStructure;
-	ADC_InitTypeDef				ADC_InitStructure;
-	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);//使能GPIOA时钟
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIOA时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE); //使能ADC1时钟
-
-	//先初始化ADC1通道678 IO口
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;//PA6 7 通道6 7
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;//模拟输入
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;//不带上下拉
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化
-	
-	 GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//PB0 通道8
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;//模拟输入
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;//不带上下拉
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化  
-
- 
-	RCC_APB2PeriphResetCmd(RCC_APB2Periph_ADC1,ENABLE);	  //ADC1复位
-	RCC_APB2PeriphResetCmd(RCC_APB2Periph_ADC1,DISABLE);	//复位结束	 
- 
-	
-	ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;//独立模式
-	ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;//两个采样阶段之间的延迟5个时钟
-	ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled; //DMA失能
-	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div4;//预分频4分频。ADCCLK=PCLK2/4=84/4=21Mhz,ADC时钟最好不要超过36Mhz 
-	ADC_CommonInit(&ADC_CommonInitStructure);//初始化
-	
-	ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;//12位模式
-	ADC_InitStructure.ADC_ScanConvMode = DISABLE;//非扫描模式	
-	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;//关闭连续转换
-	ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;//禁止触发检测，使用软件触发
-	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;//右对齐	
-	ADC_InitStructure.ADC_NbrOfConversion = 3;//3个转换在规则序列中 也就是只转换规则序列3
-	ADC_Init(ADC1, &ADC_InitStructure);//ADC初始化
-	
-	ADC_Cmd(ADC1, ENABLE);//开启AD转换器	
-
-}				  
-//获得ADC值
-//ch: @ref ADC_channels 
-//通道值 0~16取值范围为：ADC_Channel_0~ADC_Channel_16
-//返回值:转换结果
-u16 Get_Adc(u8 ch)   
-{
-	ADC_Cmd(ADC1, ENABLE);//开启AD转换器	
-			//设置指定ADC的规则组通道，一个序列，采样时间
-	ADC_RegularChannelConfig(ADC1, ch, 1, ADC_SampleTime_84Cycles );	//ADC1,ADC通道,480个周期,提高采样时间可以提高精确度			    
-	
-	ADC_SoftwareStartConv(ADC1);		//使能指定的ADC1的软件转换启动功能	
-	 
-	while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC ));//等待转换结束
-	ADC_Cmd(ADC1, DISABLE);//开启AD转换器	
-	return ADC_GetConversionValue(ADC1);	//返回最近一次ADC1规则组的转换结果
-}
-//获取通道ch的转换值，取times次,然后平均 
-//ch:通道编号
-//times:获取次数
-//返回值:通道ch的times次转换结果平均值
-u16 Get_Adc_Average(u8 ch,u8 times)
-{
-	u32 temp_val=0;
-	u8 t;
-	for(t=0;t<times;t++)
-	{
-		temp_val+=Get_Adc(ch);
-		delay_ms(5);
-	}
-	return temp_val/times;
-}
-*/

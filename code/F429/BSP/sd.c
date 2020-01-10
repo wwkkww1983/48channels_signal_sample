@@ -101,29 +101,38 @@ void text_new_pathname(u8 *pname)
 	}
 }
 
-bool write_flag = 0;
 void save_adc_data(void)
 {
-	write_flag = 1;
-	res=f_open(f_bin,(const TCHAR*)pname,FA_OPEN_ALWAYS|FA_WRITE);
-	if(res==0)
+	if(ADC1_data_update)
 	{
-		f_lseek(f_bin,f_bin->fsize);
-		if(ADC1_data_update)
-		{
-			ADC1_data_update = 0;
-			res=f_write(f_bin,ADC_PTR.ADC1_CurrentBuffPtr,ADC_BUFFSIZE*16*2,(UINT*)&br);
-		}
-		if(ADC3_data_update)
-		{
-			ADC3_data_update = 0;
-			res=f_write(f_bin,ADC_PTR.ADC3_CurrentBuffPtr,ADC_BUFFSIZE*8*2,(UINT*)&br);
-		}
-//		res=f_write(f_bin,ADC_PTR,2*2*2,(UINT*)&br);
+		while(ADC3_data_update == 0);
+		res=f_open(f_bin,(const TCHAR*)pname,FA_OPEN_ALWAYS|FA_WRITE);
 		if(res==0)
-		f_close(f_bin);
+		{
+			f_lseek(f_bin,f_bin->fsize);
+			ADC1_data_update = 0;
+			ADC3_data_update = 0;
+			res=f_write(f_bin,ADC_PTR.ADC1_CurrentBuffPtr,ADC_BUFFSIZE*ADC1_CHANNEL*2,(UINT*)&br);			//写入ADC1的数据 长度为ADC_BUFFSIZE*ADC1_CHANNEL*2
+			res=f_write(f_bin,ADC_PTR.ADC3_CurrentBuffPtr,ADC_BUFFSIZE*ADC3_CHANNEL*2,(UINT*)&br);			//写入ADC2的数据 长度为ADC_BUFFSIZE*ADC2_CHANNEL*2
+			if(res==0)
+				f_close(f_bin);
+		}
 	}
-	write_flag = 0;
+	else if(ADC3_data_update)
+	{
+		while(ADC1_data_update == 0);
+		res=f_open(f_bin,(const TCHAR*)pname,FA_OPEN_ALWAYS|FA_WRITE);
+		if(res==0)
+		{
+			f_lseek(f_bin,f_bin->fsize);
+			ADC1_data_update = 0;
+			ADC3_data_update = 0;
+			res=f_write(f_bin,ADC_PTR.ADC1_CurrentBuffPtr,ADC_BUFFSIZE*ADC1_CHANNEL*2,(UINT*)&br);			//写入ADC1的数据 长度为ADC_BUFFSIZE*ADC1_CHANNEL*2
+			res=f_write(f_bin,ADC_PTR.ADC3_CurrentBuffPtr,ADC_BUFFSIZE*ADC3_CHANNEL*2,(UINT*)&br);			//写入ADC2的数据 长度为ADC_BUFFSIZE*ADC2_CHANNEL*2
+			if(res==0)
+				f_close(f_bin);
+		}
+	}
 }
 
 

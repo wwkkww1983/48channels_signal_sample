@@ -15,6 +15,9 @@ void ADCInit_Timer(void);
 void ADCInit_Nvic(void);
 void ADCInit(void);
 
+extern const u8 ADC1_CHANNEL;
+extern const u8 ADC3_CHANNEL;
+
 extern bool ADC1_data_update;
 extern bool ADC3_data_update;
 extern ADC_CurrentBuffPtr ADC_PTR;
